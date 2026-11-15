@@ -228,6 +228,103 @@
             display: none !important;
         }
 
+        /* All URL parameters table styles */
+        .params-details {
+            margin-bottom: 16px;
+            background: #0d1117;
+            border: 1px solid #2a3645;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .params-details summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            cursor: pointer;
+            list-style: none;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e6edf3;
+            background: rgba(42, 54, 69, 0.25);
+            user-select: none;
+        }
+        .params-details summary::-webkit-details-marker {
+            display: none;
+        }
+        .params-details summary::after {
+            content: '+';
+            font-size: 16px;
+            color: #9fb0c0;
+            line-height: 1;
+        }
+        .params-details[open] summary::after {
+            content: '−';
+        }
+        .params-details[open] summary {
+            border-bottom: 1px solid #2a3645;
+        }
+        .params-table-wrap {
+            overflow-x: auto;
+        }
+        .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+        .params-table th {
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9fb0c0;
+            border-bottom: 1px solid #2a3645;
+            background: rgba(22, 27, 34, 0.6);
+        }
+        .params-table td {
+            padding: 8px 10px;
+            vertical-align: middle;
+            color: #9fb0c0;
+            border-bottom: 1px solid rgba(42, 54, 69, 0.5);
+        }
+        .params-table tr:last-child td {
+            border-bottom: none;
+        }
+        .params-table td:first-child {
+            width: 36px;
+            text-align: center;
+        }
+        .params-table td:nth-child(2) {
+            white-space: nowrap;
+        }
+        .params-table input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: #ff4136;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .params-table input[type="checkbox"]:disabled {
+            opacity: 0.55;
+            cursor: default;
+        }
+        .param-select {
+            margin-left: 6px;
+            padding: 3px 6px;
+            border-radius: 5px;
+            border: 1px solid #2a3645;
+            background: #161b22;
+            color: #e6edf3;
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .param-select:focus {
+            outline: none;
+            border-color: #ff4136;
+        }
+
         /* Short.io specific styles */
         .shortio-section { margin-top: 20px; background: #161b22; border: 1px solid #2a3645; border-radius: 12px; padding: 18px 20px; }
         .shortio-section h2 { font-size: 16px; margin: 0 0 12px; color: #e6edf3; }
@@ -290,19 +387,90 @@
                 </div>
             </div>
             
-            <div class="form-group">
-                <label>Options</label>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" id="dynamic-scale" checked>
-                        Dynamic Scaling
-                    </label>
-                    <label>
-                        <input type="checkbox" id="streamlabs-mode" checked>
-                        Streamlabs Mode
-                    </label>
+            <details class="params-details" open>
+                <summary>All URL parameters</summary>
+                <div class="params-table-wrap">
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Use</th>
+                                <th scope="col">Parameter</th>
+                                <th scope="col">What it does</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox" id="param-matchId" checked></td>
+                                <td><code>matchId</code></td>
+                                <td>The CricClubs match to follow (required for live matches).</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-clubId" checked></td>
+                                <td><code>clubId</code></td>
+                                <td>CricClubs club ID. Defaults to <code>40319</code> (USACricketJunior).</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-theme" checked></td>
+                                <td><code>theme</code></td>
+                                <td>One of the themes above. Defaults to <code>orange</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-logo"></td>
+                                <td>
+                                    <code>logo</code>
+                                    <select id="param-logo-val" class="param-select" aria-label="Sponsor logo">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td>Shows a sponsor logo in the top-right corner (<code>1</code> or <code>2</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-debug"></td>
+                                <td>
+                                    <code>debug</code>
+                                    <select id="param-debug-val" class="param-select" aria-label="Debug scenario">
+                                        <option value="1">1 (1st Inn)</option>
+                                        <option value="2">2 (Chase)</option>
+                                        <option value="3">3 (Result)</option>
+                                        <option value="4">4 (Toss)</option>
+                                        <option value="5">5 (No Logos)</option>
+                                    </select>
+                                </td>
+                                <td>Sample data instead of a live match: <code>1</code> first innings, <code>2</code> chase, <code>3</code> result, <code>4</code> toss, <code>5</code> no logos.</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-card"></td>
+                                <td>
+                                    <code>card</code>
+                                    <select id="param-card-val" class="param-select" aria-label="Sample event card">
+                                        <option value="wicket">wicket</option>
+                                        <option value="milestone">milestone</option>
+                                        <option value="partnership">partnership</option>
+                                        <option value="boundary">boundary</option>
+                                    </select>
+                                </td>
+                                <td>In debug mode, holds a sample card on screen (<code>wicket</code>, <code>milestone</code>, <code>partnership</code>, <code>boundary</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-mode"></td>
+                                <td><code>mode=replay</code></td>
+                                <td>Cycles through a recorded match to test transitions.</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-quiet"></td>
+                                <td><code>quiet</code></td>
+                                <td>Turns off the event cards (wicket, fifty, partnership, boundary) and shows only the bar.</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" id="param-nostats"></td>
+                                <td><code>nostats=1</code></td>
+                                <td>Opts this browser out of anonymous usage statistics.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+            </details>
             
             <label class="preview-label">Preview</label>
             <div class="url-preview" id="url-preview"></div>
@@ -442,15 +610,35 @@
             const matchId = matchIdField.value.trim() || '0';
             const clubId = clubIdField.value.trim() || '40319';
             const theme = selectedTheme;
-            const useDynamic = document.getElementById('dynamic-scale').checked;
-            const useSl = document.getElementById('streamlabs-mode').checked;
             
             const parts = [];
-            if (useDynamic) parts.push('dynamic=1');
-            if (useSl) parts.push('sl=1');
-            parts.push('matchId=' + encodeURIComponent(matchId));
-            parts.push('clubId=' + encodeURIComponent(clubId));
-            parts.push('theme=' + encodeURIComponent(theme));
+            if (document.getElementById('param-matchId').checked) {
+                parts.push('matchId=' + encodeURIComponent(matchId));
+            }
+            if (document.getElementById('param-clubId').checked) {
+                parts.push('clubId=' + encodeURIComponent(clubId));
+            }
+            if (document.getElementById('param-theme').checked) {
+                parts.push('theme=' + encodeURIComponent(theme));
+            }
+            if (document.getElementById('param-logo').checked) {
+                parts.push('logo=' + encodeURIComponent(document.getElementById('param-logo-val').value));
+            }
+            if (document.getElementById('param-debug').checked) {
+                parts.push('debug=' + encodeURIComponent(document.getElementById('param-debug-val').value));
+            }
+            if (document.getElementById('param-card').checked) {
+                parts.push('card=' + encodeURIComponent(document.getElementById('param-card-val').value));
+            }
+            if (document.getElementById('param-mode').checked) {
+                parts.push('mode=replay');
+            }
+            if (document.getElementById('param-quiet').checked) {
+                parts.push('quiet=1');
+            }
+            if (document.getElementById('param-nostats').checked) {
+                parts.push('nostats=1');
+            }
             
             const baseUrl = window.location.origin + window.location.pathname;
             return baseUrl + '?' + parts.join('&');
@@ -469,8 +657,25 @@
             clubIdRadio.forEach(r => r.checked = false);
             updateUrl();
         });
-        document.getElementById('dynamic-scale').addEventListener('change', updateUrl);
-        document.getElementById('streamlabs-mode').addEventListener('change', updateUrl);
+        [
+            'param-matchId', 'param-clubId', 'param-theme', 'param-logo', 'param-logo-val',
+            'param-debug', 'param-debug-val', 'param-card', 'param-card-val',
+            'param-mode', 'param-quiet', 'param-nostats'
+        ].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', updateUrl);
+        });
+        // Auto-check the row checkbox when its dropdown value is changed
+        ['logo', 'debug', 'card'].forEach(key => {
+            const selectEl = document.getElementById(`param-${key}-val`);
+            const checkEl = document.getElementById(`param-${key}`);
+            if (selectEl && checkEl) {
+                selectEl.addEventListener('change', () => {
+                    checkEl.checked = true;
+                    updateUrl();
+                });
+            }
+        });
         
         // Copy button
         copyBtn.addEventListener('click', async (e) => {
