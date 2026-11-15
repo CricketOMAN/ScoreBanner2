@@ -26,9 +26,9 @@ interface TrackingContext {
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0']);
 
-/** Nothing is sent from local dev, mock/replay modes, or when the viewer opted out. */
+/** Nothing is sent from local dev, GitHub Pages, mock/replay modes, or when the viewer opted out. */
 export function isTrackingEnabled(ctx: TrackingContext): boolean {
-    if (LOCAL_HOSTS.has(ctx.hostname)) return false;
+    if (LOCAL_HOSTS.has(ctx.hostname) || ctx.hostname.endsWith('.github.io')) return false;
     if (ctx.debug || ctx.mode === 'replay') return false;
     if (ctx.nostats !== null) return false;
     if (ctx.doNotTrack === '1') return false;

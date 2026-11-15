@@ -33,8 +33,9 @@ describe('isTrackingEnabled', () => {
         expect(isTrackingEnabled(base)).toBe(true);
     });
 
-    it('is off for localhost, debug, replay, nostats and Do Not Track', () => {
+    it('is off for localhost, GitHub Pages, debug, replay, nostats and Do Not Track', () => {
         expect(isTrackingEnabled({ ...base, hostname: 'localhost' })).toBe(false);
+        expect(isTrackingEnabled({ ...base, hostname: 'cricketoman.github.io' })).toBe(false);
         expect(isTrackingEnabled({ ...base, debug: '1' })).toBe(false);
         expect(isTrackingEnabled({ ...base, mode: 'replay' })).toBe(false);
         expect(isTrackingEnabled({ ...base, nostats: '' })).toBe(false);
