@@ -76,8 +76,8 @@ body {
 #firstInnings {
     position: relative;
     display: grid;
-    grid-template-columns: 96px auto minmax(340px, 1fr) minmax(360px, 1fr) 96px;
-    grid-template-rows: 100px;
+    grid-template-columns: 72px auto minmax(310px, 1fr) minmax(330px, 1fr) 72px;
+    grid-template-rows: 72px;
     align-items: stretch;
     overflow: hidden;
     background: var(--surface-frame);
@@ -100,8 +100,8 @@ body {
 .bowling-team-info  { grid-column: 5; grid-row: 1; border-inline-start: 1px solid var(--divider); }
 
 .team-logo {
-    inline-size: 64px;
-    block-size: 64px;
+    inline-size: 56px;
+    block-size: 56px;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
@@ -120,8 +120,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding-inline: 22px;
+    gap: 14px;
+    padding-inline: 18px;
     min-inline-size: 0;
 }
 
@@ -134,7 +134,7 @@ body {
 .bowler-name {
     display: inline-flex;
     align-items: center;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     line-height: 1;
     letter-spacing: 0.01em;
@@ -148,9 +148,9 @@ body {
 .batsman-row.on-strike .batsman-name::after {
     content: '';
     flex: none;
-    inline-size: 16px;
-    block-size: 16px;
-    margin-inline-start: 9px;
+    inline-size: 15px;
+    block-size: 15px;
+    margin-inline-start: 8px;
     background: var(--brand-accent);
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.2 2.3a1.6 1.6 0 0 1 2.3 0l5.2 5.2a1.6 1.6 0 0 1 0 2.3L12.4 19a3.2 3.2 0 0 1-4.5 0L5 16.1a3.2 3.2 0 0 1 0-4.5z'/%3E%3Cpath d='M4.3 16.9l2.8 2.8-3.4 3.4a1.2 1.2 0 0 1-1.7 0l-1.1-1.1a1.2 1.2 0 0 1 0-1.7z'/%3E%3C/svg%3E") center / contain no-repeat;
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.2 2.3a1.6 1.6 0 0 1 2.3 0l5.2 5.2a1.6 1.6 0 0 1 0 2.3L12.4 19a3.2 3.2 0 0 1-4.5 0L5 16.1a3.2 3.2 0 0 1 0-4.5z'/%3E%3Cpath d='M4.3 16.9l2.8 2.8-3.4 3.4a1.2 1.2 0 0 1-1.7 0l-1.1-1.1a1.2 1.2 0 0 1 0-1.7z'/%3E%3C/svg%3E") center / contain no-repeat;
@@ -161,7 +161,7 @@ body {
     display: flex;
     align-items: baseline;
     gap: 10px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     line-height: 1;
     color: var(--fg-accent);
@@ -190,15 +190,15 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    gap: 7px;
-    min-inline-size: 280px;
-    padding-inline: 24px;
+    gap: 3px;
+    min-inline-size: 240px;
+    padding-inline: 18px;
     background: var(--surface-pill);
     color: var(--fg-pill, var(--fg));
 }
 
 .team-name {
-    font-size: 19px;
+    font-size: 16px;
     font-weight: 800;
     line-height: 1;
     letter-spacing: 0.06em;
@@ -213,39 +213,39 @@ body {
 }
 
 .score {
-    font-size: 38px;
+    font-size: 30px;
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.01em;
 }
 
 .wickets {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     line-height: 1;
-    margin-inline-start: 3px;
+    margin-inline-start: 2px;
     opacity: 0.9;
 }
 
 .overs {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
     line-height: 1;
-    margin-inline-start: 12px;
-    padding-inline-start: 12px;
+    margin-inline-start: 10px;
+    padding-inline-start: 10px;
     border-inline-start: 1px solid currentColor;
     opacity: 0.8;
 }
 
 /* Row 2 tail: CRR in the first innings, Target in a chase */
 .status-inline {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    margin-inline-start: 12px;
-    padding-inline-start: 12px;
+    margin-inline-start: 10px;
+    padding-inline-start: 10px;
     border-inline-start: 1px solid currentColor;
     opacity: 0.85;
     white-space: nowrap;
@@ -254,7 +254,7 @@ body {
 
 /* Row 3: Need n from b · RRR in a chase. Hidden when empty. */
 .status-line {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0.06em;
@@ -269,19 +269,19 @@ body {
 .ball-by-ball-container {
     display: flex;
     align-items: center;
-    gap: 7px;
-    min-block-size: 28px;
+    gap: 6px;
+    min-block-size: 24px;
 }
 
 .ball-indicator {
     display: grid;
     place-items: center;
-    inline-size: 28px;
-    block-size: 28px;
+    inline-size: 24px;
+    block-size: 24px;
     border-radius: 50%;
     background: var(--ball-idle);
     color: var(--fg-muted);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.01em;
@@ -301,9 +301,9 @@ body {
 .ball-indicator.run-6 { background: var(--ob-six); color: #ffffff; }
 .ball-indicator.wicket { background: var(--ob-wicket); color: #ffffff; }
 .ball-indicator.wide,
-.ball-indicator.no-ball { background: var(--ob-extra); color: #1a1400; font-size: 10px; }
+.ball-indicator.no-ball { background: var(--ob-extra); color: #1a1400; font-size: 9px; }
 .ball-indicator.leg-bye,
-.ball-indicator.bye { background: var(--ob-bye); color: #ffffff; font-size: 10px; }
+.ball-indicator.bye { background: var(--ob-bye); color: #ffffff; font-size: 9px; }
 
 .ball-indicator.dot {
     color: transparent;
@@ -314,8 +314,8 @@ body {
     content: '';
     position: absolute;
     inset: 50% auto auto 50%;
-    inline-size: 8px;
-    block-size: 8px;
+    inline-size: 7px;
+    block-size: 7px;
     border-radius: 50%;
     background: var(--fg-muted);
     transform: translate(-50%, -50%);
@@ -330,8 +330,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 6px;
-    padding-inline: 28px;
+    gap: 4px;
+    padding-inline: 22px;
     --type: var(--brand-accent);
     background: var(--card-bg);
     color: var(--card-fg);
@@ -353,7 +353,7 @@ body {
 .event-card[data-type="boundary"][data-runs="6"] { --type: var(--ob-six); }
 
 .event-eyebrow {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 800;
     line-height: 1;
     letter-spacing: 0.14em;
@@ -363,7 +363,7 @@ body {
 .event-eyebrow:empty { display: none; }
 
 .event-headline {
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 800;
     line-height: 1.05;
     letter-spacing: -0.01em;
@@ -373,7 +373,7 @@ body {
 }
 
 .event-detail {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 1.2;
     opacity: 0.85;
@@ -385,7 +385,7 @@ body {
 
 .event-card[data-type="boundary"] { align-items: center; }
 .event-card[data-type="boundary"] .event-headline {
-    font-size: 44px;
+    font-size: 34px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--type);
@@ -394,13 +394,13 @@ body {
 /* ---- Result card ---- */
 
 #result {
-    padding: 16px 36px;
+    padding: 12px 28px;
     border-radius: var(--radius);
     background: var(--surface-pill);
     color: var(--fg-pill, var(--fg));
     border: 1px solid var(--border-frame);
     box-shadow: var(--shadow-slab);
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     line-height: 1;
     letter-spacing: 0.06em;
