@@ -4,7 +4,7 @@ import perryHomesLogo from './assets/images/PerryHomes.png';
 
 export const CONFIG: Config = {
     REFRESH_RATE: 5000,
-    DEFAULT_CLUB_ID: '1089463', // LPCL
+    DEFAULT_CLUB_ID: '40319', // USACricketJunior
     // Imported so Vite copies and hashes the files into dist/ and resolves the
     // URL relative to the deployed base (a plain '../assets/...' path 404s on
     // GitHub Pages because Vite never copies files outside src/ or public/).

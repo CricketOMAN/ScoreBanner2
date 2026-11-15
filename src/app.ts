@@ -98,17 +98,20 @@ export function setupLinkStreamForm() {
 export async function updateScore() {
     const params = getQueryParams();
     const instructionsEl = document.getElementById('instructions');
+    const setupPanelEl = document.getElementById('setup-panel');
     const overlayEl = document.querySelector('.overlay') as HTMLElement;
 
     // Show instructions if no match context is provided
     if (!params.matchId && !params.debug && params.mode !== 'replay') {
         if (instructionsEl) instructionsEl.style.display = 'flex';
+        if (setupPanelEl) setupPanelEl.classList.remove('hidden');
         if (overlayEl) overlayEl.style.display = 'none';
         trackOnce('home_view');
         return;
     }
 
     if (instructionsEl) instructionsEl.style.display = 'none';
+    if (setupPanelEl) setupPanelEl.classList.add('hidden');
     if (overlayEl) overlayEl.style.display = '';
 
     applyTheme(params.theme);

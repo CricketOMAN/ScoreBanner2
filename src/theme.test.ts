@@ -39,7 +39,7 @@ describe('applyTheme', () => {
 
     it('exposes every theme listed on the instructions screen', () => {
         expect(AVAILABLE_THEMES).toEqual([
-            'classic', 'modern-light', 'modern-dark', 'neon',
+            'orange', 'classic', 'modern-light', 'modern-dark', 'neon',
             'kkr', 'rcb', 'mi', 'csk', 'dc', 'rr', 'srh', 'pbks', 'gt', 'lsg',
             'topguns-light', 'topguns-dark',
         ]);

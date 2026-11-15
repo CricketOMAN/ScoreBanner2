@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Live Stream - Cricket Scorecard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            line-height: 1.6;
+            padding: 32px 20px;
+        }
+        
+        .setup-panel {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .setup-panel h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .subtitle {
+            color: #9fb0c0;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        
+        .box {
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(42, 54, 69, 0.5);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            color: #9fb0c0;
+            margin-bottom: 6px;
+        }
+        
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #2a3645;
+            background: #0d1117;
+            color: #e6edf3;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        
+        input[type="text"]:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: #ff4136;
+        }
+        
+        input[type="text"]::placeholder, input[type="url"]::placeholder {
+            color: #666;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            font-family: inherit;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff4136, #ff851b);
+            color: #ffffff;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 65, 54, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #2a3645;
+            color: #9fb0c0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .help-text {
+            color: #9fb0c0;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        #status-message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(46, 160, 67, 0.15);
+            border: 1px solid rgba(46, 160, 67, 0.4);
+            color: #3fb950;
+        }
+
+        .status-error {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid rgba(248, 81, 73, 0.4);
+            color: #f85149;
+        }
+
+        .status-info {
+            background: rgba(56, 139, 253, 0.1);
+            border: 1px solid rgba(56, 139, 253, 0.4);
+            color: #58a6ff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="setup-panel" class="setup-panel">
+        <h1>Link Live Stream</h1>
+        <p class="subtitle">Attach a YouTube live stream link to a CricClubs match.</p>
+
+        <div class="box">
+            <form id="link-stream-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="link-club-id">Club ID (CricClubs club ID)</label>
+                    <input type="text" id="link-club-id" name="linkClubId" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="link-match-id">Match ID (CricClubs match ID)</label>
+                    <input type="text" id="link-match-id" name="linkMatchId" placeholder="e.g. 2169" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="link-stream-url">YouTube Live Stream URL</label>
+                    <input type="url" id="link-stream-url" name="liveStreamURL" placeholder="https://www.youtube.com/watch?v=..." required>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" id="link-stream-submit" class="btn btn-primary">Link Stream</button>
+                </div>
+
+                <div id="status-message"></div>
+            </form>
+            <p class="help-text">Note: Ensure your browser allows popups for this site, as a temporary window must be opened to link the stream.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { linkLiveStream } from './src/liveStream.ts';
+        
+        // Setup Link Stream Logic
+        const form = document.getElementById('link-stream-form');
+        const submitBtn = document.getElementById('link-stream-submit');
+        const statusMsg = document.getElementById('status-message');
+
+        function showStatus(message, type) {
+            statusMsg.textContent = message;
+            statusMsg.className = '';
+            statusMsg.classList.add(`status-${type}`);
+            statusMsg.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const clubId = document.getElementById('link-club-id').value.trim();
+            const matchId = document.getElementById('link-match-id').value.trim();
+            const liveStreamURL = document.getElementById('link-stream-url').value.trim();
+
+            if (!clubId || !matchId || !liveStreamURL) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Linking...';
+            showStatus('Attempting to link stream... (popup may open)', 'info');
+
+            try {
+                await linkLiveStream({ clubId, matchId, liveStreamURL });
+                showStatus('Success! Live stream link submitted to the match.', 'success');
+            } catch (error) {
+                console.error('Error linking live stream:', error);
+                const message = error instanceof Error && error.message 
+                    ? error.message 
+                    : 'Failed to link live stream. Please try again.';
+                showStatus(message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Link Stream';
+            }
+        });
+    </script>
+</body>
+
+</html>

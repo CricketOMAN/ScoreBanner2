@@ -1,0 +1,35 @@
+/* ORANGE: warm orange/amber brand block with dark neutral bar. Layout lives in overlay-base.css. */
+.theme-orange {
+    --radius: 12px;
+
+    /* Brand */
+    --brand-accent: #ffcc00;
+
+    /* Surfaces */
+    --surface-frame: rgba(17, 24, 39, 0.92);
+    --surface-pill: linear-gradient(135deg, #ff4136, #ff851b);
+    --surface-panel: rgba(255, 255, 255, 0.05);
+    --surface-row: rgba(255, 255, 255, 0.03);
+
+    /* Lines */
+    --border-frame: rgba(255, 255, 255, 0.12);
+    --divider: rgba(255, 255, 255, 0.14);
+    --divider-row: rgba(255, 255, 255, 0.08);
+
+    /* Text */
+    --fg: #ffffff;
+    --fg-pill: #ffffff;
+    --fg-title: #ffffff;
+    --fg-accent: #ffcc00;
+    --fg-muted: #94a3b8;
+    --fg-on-bright: #111827;
+
+    /* Balls */
+    --ball-idle: rgba(255, 255, 255, 0.15);
+    --ball-neutral: #0066ff;
+    --ball-neutral-fg: #ffffff;
+
+    /* Cards */
+    --card-bg: #1e293b;
+    --card-fg: #f8fafc;
+}

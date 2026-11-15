@@ -1,6 +1,7 @@
 import { CONFIG } from './config';
 import { DOM } from './dom';
 import './css/overlay-base.css';
+import './css/theme-orange.css';
 import './css/theme-classic.css';
 import './css/theme-modern-light.css';
 import './css/theme-modern-dark.css';
@@ -20,7 +21,7 @@ import './css/theme-topguns-dark.css';
 
 /** Every theme is a colour palette layered on overlay-base.css. */
 export const AVAILABLE_THEMES = [
-    'classic', 'modern-light', 'modern-dark', 'neon',
+    'orange', 'classic', 'modern-light', 'modern-dark', 'neon',
     'kkr', 'rcb', 'mi', 'csk', 'dc', 'rr', 'srh', 'pbks', 'gt', 'lsg',
     'topguns-light', 'topguns-dark',
 ] as const;
