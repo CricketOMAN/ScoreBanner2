@@ -1,16 +1,15 @@
 # Cricket Scorecard Overlay
 
-A professional, lightweight, and responsive cricket scorecard overlay designed for live streaming (OBS, vMix, etc.). It fetches real-time match data from the **CricClubs** API or runs in debug mode with mock data.
+A lightweight, responsive cricket scorecard overlay designed for live streaming (OBS, vMix, Streamlabs). It fetches real-time match data from the **CricClubs** API or runs in debug/replay mode with mock data.
 
 ## Features
-- **Real-Time Updates**: Polls the API automatically for live scores.
-- **17 Themes**: One clean broadcast layout with a colour palette for every IPL franchise, three core palettes (classic, modern, neon) and the Topguns set. See [Available Themes](#available-themes) below.
-- **Home page with a link builder**: Visit the site with no parameters to build your overlay URL, preview any theme with sample data, and link a YouTube stream to a match.
-- **Link Live Stream**: A home-screen utility to attach a YouTube live stream link to a CricClubs match without leaving the overlay.
-- **Self-Hosted Fonts**: Uses **Montserrat** (bundled) for consistent rendering across all devices without external dependencies.
-- **Performance Optimized**: Zero layout shifts (CLS), minimal network footprint, and bundled CSS.
-- **Developer Experience**: Built with **Vite** and **TypeScript**.
-- **Usage Analytics**: A tiny first-party collector (Cloudflare Worker + D1) records which matches, themes, and streaming apps use the overlay. No cookies, no third parties; see [Usage analytics](#usage-analytics).
+- **Real-Time Updates**: Polls the CricClubs API automatically every 5 seconds for live scores.
+- **18 Themes**: One clean broadcast layout with colour palettes for `orange`, core palettes (`classic`, `modern-light`, `modern-dark`, `neon`), every IPL franchise, and the Topguns set. See [Available Themes](#available-themes) below.
+- **Event Cards**: Automatic cards for Wickets, Fifties/Hundreds, Boundaries (4/6), and 50/100 Partnerships derived from consecutive poll diffs.
+- **Setup Panel & Short.io Integration**: Visit the site with no parameters to build your overlay URL, toggle any URL parameter via checkboxes, and update existing Short.io short links in one click.
+- **Link Live Stream (`link.html`)**: Dedicated utility page to attach a YouTube live stream link to a CricClubs match.
+- **Self-Hosted Fonts**: Uses **Montserrat** (bundled) for consistent rendering across all devices without external font requests.
+- **Developer Experience**: Built with **Vite** and **TypeScript**, tested with **Vitest**, and deployed automatically to **GitHub Pages**.
 
 ---
 
@@ -26,13 +25,12 @@ npm run dev
 ```
 The server usually starts at `http://localhost:5173`.
 
-Visiting the app with no `matchId` shows the home page: a URL builder that writes the overlay link for you, one-click theme previews, the Link Live Stream form (see below) and a reference table of every parameter.
+Visiting the app with no `matchId` shows the Setup Panel (`#setup-panel`): a live URL builder with Club ID presets (`USACricketJunior` `40319` and `GPCL` `48`), theme buttons, an interactive **All URL parameters** table, and Short.io link updater buttons.
 
 ### 2. Add to OBS
-1.  Add a **Browser Source** in OBS.
-2.  Set the URL to your local server (or deployed GitHub Pages URL).
-3.  Set Width: `1920`, Height: `1080` (or your canvas size).
-4.  Append the necessary query parameters (see below).
+1. Add a **Browser Source** in OBS.
+2. Set the URL to `https://cricketoman.github.io/ScoreBanner2/` with your query parameters (or your Short.io short link).
+3. Set Width: `1920`, Height: `1080` (transparent canvas).
 
 ---
 
@@ -42,25 +40,26 @@ Control the behavior and look of the overlay using URL parameters:
 
 | Parameter | Required? | Description | Example |
 | :--- | :--- | :--- | :--- |
-| `matchId` | **Yes** | The unique Match ID from CricClubs. | `?matchId=1939` |
-| `clubId` | No | The Club ID (Default: `1089463`, LPCL). | `?clubId=12345` |
-| `theme` | No | One of the themes listed below (default: `modern-light`; `modern` still works as an alias). | `?theme=kkr` |
-| `debug` | No | Use mock data (1-5) instead of live API. | `?debug=1` |
+| `matchId` | **Yes** | The unique Match ID from CricClubs. | `?matchId=2169` |
+| `clubId` | No | The Club ID (Default: `40319`, USACricketJunior). | `?clubId=48` |
+| `theme` | No | One of the themes listed below (default in Setup Panel: `orange`; fallback: `modern-light`). | `?theme=orange` |
+| `logo` | No | Displays specific sponsor logos (`1` or `2`). | `?logo=1` |
+| `debug` | No | Use mock data (`1`–`5`) instead of the live API. | `?debug=1` |
+| `card` | No | Holds a sample event card on screen in debug mode (`wicket`, `milestone`, `partnership`, `boundary`). | `?debug=1&card=wicket` |
 | `mode` | No | Special modes like `replay`. | `?mode=replay` |
-| `quiet` | No | Turns off the event cards and shows only the bar. | `?quiet` |
-| `logo` | No | Displays specific sponsor logos. | `?logo=1` |
+| `quiet` | No | Turns off the event cards and shows only the bar. | `?quiet=1` |
 
-### Event cards
-The bar stays constant; moments earn a card that slides in over the batter and bowler slots, holds, and leaves. Cards are derived by diffing one poll against the previous one, so nothing extra is requested:
+### Event Cards
+The bar stays constant; moments earn a card that slides in over the batter and bowler slots, holds, and leaves. Cards are derived by diffing one poll against the previous one:
 
 | Card | Trigger | Holds |
 | :--- | :--- | :--- |
-| Wicket | batting side's wicket count rises | 8s |
-| Fifty / Hundred | a batter crosses 50 or 100 | 8s |
-| Four / Six | the newest ball is a boundary | 2s |
-| 50 / 100 partnership | the current stand crosses 50 or 100 | 6s |
+| Wicket | Batting side's wicket count rises | 8s |
+| Fifty / Hundred | A batter crosses 50 or 100 | 8s |
+| Four / Six | The newest ball is a boundary | 2s |
+| 50 / 100 partnership | The current stand crosses 50 or 100 | 6s |
 
-Cards queue and play one at a time; a wicket suppresses the boundary flash on the same ball. `?quiet` disables them. In debug mode, `&card=wicket` (or `milestone`, `partnership`, `boundary`) holds a sample card so you can position it in OBS.
+Cards queue and play one at a time; a wicket suppresses the boundary flash on the same ball. `?quiet=1` disables them. In debug mode, `&card=wicket` (or `milestone`, `partnership`, `boundary`) holds a sample card so you can position it in OBS.
 
 ### Debug Modes
 Test layouts without a live match:
@@ -72,58 +71,25 @@ Test layouts without a live match:
 
 ### Available Themes
 Every theme shares the same layout (`src/css/overlay-base.css`); a theme is a palette of colour tokens.
-- **Core**: `classic` (cream/navy), `modern-light` (default), `modern-dark`, `neon`
+- **Core**: `orange`, `classic` (cream/navy), `modern-light` (`modern` alias), `modern-dark`, `neon`
 - **IPL Franchises**: `kkr`, `rcb`, `mi`, `csk`, `dc`, `rr`, `srh`, `pbks`, `gt`, `lsg`
-- **Topguns**: `topguns-light`, `topguns-dark` (the old `tel`/`ted`/`tul`/`tud` names still work as aliases)
+- **Topguns**: `topguns-light`, `topguns-dark` (legacy `tel`/`ted`/`tul`/`tud` names still work as aliases)
 
 ---
 
-## Link Live Stream
+## Link Live Stream (`link.html`)
 
-The home page (shown when no `matchId` is provided) includes a form to attach a YouTube live stream link to a CricClubs match: enter the Club ID (prefilled to the default), Match ID, and the YouTube URL, then submit. The button shows a busy state while the request is sent; success means CricClubs received it, and the public feed can take up to a minute to reflect it.
-
----
-
-## Usage analytics
-
-The production site reports a few anonymous events to a first-party endpoint (`/api/collect`, a Cloudflare Worker in [`worker/`](worker/)) so we can see which matches, clubs, themes and streaming apps actually use the overlay:
-
-| Event | When | What is recorded |
-| :--- | :--- | :--- |
-| `overlay_start` | Once per page load with a real `matchId` | club ID, match ID, theme, logo, client (OBS / vMix / Streamlabs / Prism / browser) and version, OS, screen size |
-| `home_view` | The home screen is shown | client, OS, screen size |
-| `link_stream_submit` | The Link Live Stream form is submitted | club ID, match ID, YouTube video ID, outcome |
-
-Cloudflare adds country, city and a **daily-rotating** salted hash used only to count distinct viewers within a day. There are no cookies, no persistent identifiers, and nothing is sent from `localhost`, `?debug=` mock modes or `?mode=replay`. Add **`?nostats=1`** to any URL to opt out; the browser's Do Not Track setting is honoured too.
-
-Aggregates are served at `https://score.abhinav.dev/stats` (private, behind Cloudflare Access).
+Visit `/link.html` (`https://cricketoman.github.io/ScoreBanner2/link.html`) to attach a YouTube live stream URL to a CricClubs match: enter the Club ID, Match ID, and YouTube URL, then click **Link Stream**.
 
 ---
 
 ## Deployment
 
-**Site**: [Netlify](https://www.netlify.com/) builds `main` (`npm run build`, publish `dist/`) and serves it as **https://score.abhinav.dev**, proxied through Cloudflare. Nothing to do beyond merging.
-
-**Analytics Worker**: lives in [`worker/`](worker/) and is deployed with Wrangler.
-
-```bash
-cd worker
-npm install
-npx wrangler login                     # once
-npx wrangler d1 create overlay-analytics   # once; paste the id into wrangler.toml
-npm run db:migrate                     # apply migrations to the remote D1 database
-npx wrangler secret put STATS_KEY      # fallback key for /stats until Access is configured
-npx wrangler secret put VISITOR_SALT   # any long random string
-npm run deploy
-```
-
-Pushes to `main` that touch `worker/**` also deploy automatically via `.github/workflows/deploy-worker.yml` once a `CLOUDFLARE_API_TOKEN` repository secret exists.
-
-To lock `/stats` behind your login, create a Cloudflare Access self-hosted application for `score.abhinav.dev/stats*`, then set `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` in `wrangler.toml` and redeploy.
+Pushes to `main` automatically run `npm run build` (TypeScript check, Vitest unit tests, and Vite production build) and deploy `dist/` to **GitHub Pages** via `.github/workflows/deploy.yml`.
 
 ---
 
-## Development commands
+## Development Commands
 
 ```bash
 # Run unit tests (watch mode)
@@ -137,11 +103,6 @@ npm run build
 
 # Preview the production build locally
 npm run preview
-
-# Analytics Worker (run inside worker/)
-npm run dev              # local Worker + local D1 on http://localhost:8787
-npm run test:run         # Worker unit tests
-npm run typecheck
 ```
 
 See [architecture.md](architecture.md) for a deeper look at the project structure and data flow.

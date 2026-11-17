@@ -1,7 +1,6 @@
 /**
- * Application orchestration: the poll loop, the mode switch in updateScore(), and the
- * Link Live Stream form. Kept separate from script.ts (the entry point with side effects)
- * so it can be unit-tested.
+ * Application orchestration: the poll loop and the mode switch in updateScore().
+ * Kept separate from script.ts (the entry point with side effects) so it can be unit-tested.
  */
 import { mock_1stInnings, mock_2ndInnings, mock_matchEnded, mock_toss, mock_noTeamImage } from './mockData';
 import { sampleReplayData } from './replayData';
@@ -12,16 +11,13 @@ import { applyTheme, updateLogo } from './theme';
 import { fetchScoreData } from './api';
 import { updateTeamLogos, updateScoreboard } from './ui';
 import { CricketAPIData } from './types';
-import { linkLiveStream, LinkLiveStreamError, extractYouTubeVideoId } from './liveStream';
-import { trackOnce, track, LinkOutcome } from './analytics';
-import { showToast } from './toast';
 import { detectEvents } from './events';
 import { enqueueCards, showSampleCard } from './cards';
 
 let replayIndex = 0;
 /** True once the overlay has painted at least one successful frame of live/mock data. */
 let hasRenderedScore = false;
-/** The previous frame, so events (wicket, fifty, boundary, target) can be derived from the diff. */
+/** The previous frame, so events (wicket, fifty, boundary, partnership) can be derived from the diff. */
 let lastData: CricketAPIData | null = null;
 let sampleCardShown = false;
 
@@ -41,76 +37,21 @@ function renderFrame(data: CricketAPIData, quiet: boolean) {
 }
 
 /**
- * Wires up the "Link Live Stream" form shown on the instructions screen.
- * Prefills the club ID and submits the CricClubs control-panel call on submit.
- */
-export function setupLinkStreamForm() {
-    const form = document.getElementById('link-stream-form') as HTMLFormElement | null;
-    const clubIdInput = document.getElementById('link-club-id') as HTMLInputElement | null;
-    const matchIdInput = document.getElementById('link-match-id') as HTMLInputElement | null;
-    const streamUrlInput = document.getElementById('link-stream-url') as HTMLInputElement | null;
-    const submitButton = document.getElementById('link-stream-submit') as HTMLButtonElement | null;
-
-    if (!form || !clubIdInput || !matchIdInput || !streamUrlInput || !submitButton) return;
-
-    clubIdInput.value = CONFIG.DEFAULT_CLUB_ID;
-
-    let inFlight = false;
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        if (inFlight) return;
-
-        const clubId = clubIdInput.value.trim();
-        const matchId = matchIdInput.value.trim();
-        const liveStreamURL = streamUrlInput.value.trim();
-        if (!clubId || !matchId || !liveStreamURL) return;
-
-        // Busy state rather than `disabled`: the button stays focusable and announced.
-        inFlight = true;
-        const originalLabel = submitButton.textContent;
-        submitButton.setAttribute('aria-busy', 'true');
-        submitButton.textContent = 'Linking...';
-        const videoId = extractYouTubeVideoId(liveStreamURL);
-        let outcome: LinkOutcome = 'submitted';
-        try {
-            await linkLiveStream({ clubId, matchId, liveStreamURL });
-            showToast('Live stream link submitted!', 'success');
-        } catch (error) {
-            console.error('Error linking live stream:', error);
-            outcome = error instanceof LinkLiveStreamError ? error.code : 'error';
-            const message = error instanceof Error && error.message
-                ? error.message
-                : 'Failed to link live stream. Please try again.';
-            showToast(message, 'error');
-        } finally {
-            track('link_stream_submit', { clubId, matchId, videoId, outcome });
-            submitButton.removeAttribute('aria-busy');
-            submitButton.textContent = originalLabel;
-            inFlight = false;
-        }
-    });
-}
-
-/**
  * Main update function that fetches data (or uses mock data) and updates the UI.
  * Handles theme application, logging, and polling logic.
  */
 export async function updateScore() {
     const params = getQueryParams();
-    const instructionsEl = document.getElementById('instructions');
     const setupPanelEl = document.getElementById('setup-panel');
-    const overlayEl = document.querySelector('.overlay') as HTMLElement;
+    const overlayEl = document.querySelector('.overlay') as HTMLElement | null;
 
-    // Show instructions if no match context is provided
+    // Show setup panel if no match context is provided
     if (!params.matchId && !params.debug && params.mode !== 'replay') {
-        if (instructionsEl) instructionsEl.style.display = 'flex';
         if (setupPanelEl) setupPanelEl.classList.remove('hidden');
         if (overlayEl) overlayEl.style.display = 'none';
-        trackOnce('home_view');
         return;
     }
 
-    if (instructionsEl) instructionsEl.style.display = 'none';
     if (setupPanelEl) setupPanelEl.classList.add('hidden');
     if (overlayEl) overlayEl.style.display = '';
 
@@ -121,10 +62,6 @@ export async function updateScore() {
         const data = sampleReplayData[replayIndex] as unknown as CricketAPIData;
         renderFrame(data, params.quiet);
         replayIndex = (replayIndex + 1) % sampleReplayData.length;
-        return;
-    }
-
-    if (!params.matchId && !params.debug) {
         return;
     }
 
@@ -157,7 +94,6 @@ export async function updateScore() {
                 showSampleCard(params.card);
             }
         } else {
-            trackOnce('overlay_start', { clubId: params.clubId, matchId: params.matchId, theme: params.theme, logo: params.logo });
             const apiUrl = `https://cricclubs.com/liveScoreOverlayData.do?clubId=${params.clubId}&matchId=${params.matchId}`;
             data = await fetchScoreData(apiUrl);
         }

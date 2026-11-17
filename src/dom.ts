@@ -7,7 +7,6 @@ export const DOM = {
     batsman2Name: document.getElementById('batsman2-name') as HTMLDivElement,
     batsman2RunsBalls: document.getElementById('batsman2-runs-balls') as HTMLDivElement,
     bowlerName: document.getElementById('bowler-name') as HTMLDivElement,
-    bowlerFigures: document.getElementById('bowler-figures') as HTMLDivElement,
     bowlerWicketsRuns: document.getElementById('bowler-wickets-runs') as HTMLSpanElement,
     bowlerOvers: document.getElementById('bowler-overs') as HTMLSpanElement,
     teamName: document.getElementById('team-name') as HTMLDivElement,
@@ -23,6 +22,4 @@ export const DOM = {
     eventHeadline: document.getElementById('event-headline') as HTMLDivElement,
     eventDetail: document.getElementById('event-detail') as HTMLDivElement,
     ballContainer: document.getElementById('ball-by-ball') as HTMLDivElement,
-    batsmanInfo: document.getElementById('batsman-info') as HTMLDivElement,
-    bowlerInfo: document.getElementById('bowler-info') as HTMLDivElement,
 };

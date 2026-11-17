@@ -21,7 +21,6 @@ beforeEach(() => {
     createMockElement('batsman2-name');
     createMockElement('batsman2-runs-balls');
     createMockElement('bowler-name');
-    createMockElement('bowler-figures');
     createMockElement('bowler-wickets-runs');
     createMockElement('bowler-overs');
     createMockElement('team-name');
@@ -38,8 +37,6 @@ beforeEach(() => {
     createMockElement('overlay-image');
     createMockElement('batting-team-logo');
     createMockElement('bowling-team-logo');
-    createMockElement('batsman-info');
-    createMockElement('bowler-info');
 });
 
 // Stub image loading: jsdom never fires onload, so control success/failure per URL.
@@ -65,7 +62,6 @@ vi.mock('./dom', () => {
                     batsman2Name: 'batsman2-name',
                     batsman2RunsBalls: 'batsman2-runs-balls',
                     bowlerName: 'bowler-name',
-                    bowlerFigures: 'bowler-figures',
                     bowlerWicketsRuns: 'bowler-wickets-runs',
                     bowlerOvers: 'bowler-overs',
                     teamName: 'team-name',
@@ -80,8 +76,6 @@ vi.mock('./dom', () => {
                     overlayImage: 'overlay-image',
                     battingTeamLogo: 'batting-team-logo',
                     bowlingTeamLogo: 'bowling-team-logo',
-                    batsmanInfo: 'batsman-info',
-                    bowlerInfo: 'bowler-info',
                 };
 
                 return document.getElementById(idMap[prop] || prop);

@@ -12,5 +12,4 @@ export const CONFIG: Config = {
         '1': pulteHomesLogo,
         '2': perryHomesLogo,
     },
-    ANALYTICS_ENDPOINT: '/api/collect',
 };
