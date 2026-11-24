@@ -42,6 +42,8 @@ beforeEach(() => {
     createMockElement('intl-chase-label');
     createMockElement('intl-chase-value');
     createMockElement('last-12-balls');
+    createMockElement('bowling-team-name');
+    createMockElement('intl-wicket-island');
 });
 
 // Stub image loading: jsdom never fires onload, so control success/failure per URL.
@@ -85,6 +87,8 @@ vi.mock('./dom', () => {
                     intlChaseLabel: 'intl-chase-label',
                     intlChaseValue: 'intl-chase-value',
                     last12BallsContainer: 'last-12-balls',
+                    bowlingTeamName: 'bowling-team-name',
+                    intlWicketIsland: 'intl-wicket-island',
                 };
 
                 return document.getElementById(idMap[prop] || prop);
@@ -281,6 +285,78 @@ describe('updateScoreboard edge cases', () => {
 
         document.body.className = '';
         vi.restoreAllMocks();
+    });
+
+    it('shows the bowling team nibble and displays the last wicket island for 120s (hiding the nibble while visible)', () => {
+        vi.useFakeTimers();
+        resetUiStateForTests();
+        document.body.className = 'theme-international';
+
+        // No wickets yet -> bowling team nibble is set, wicket island is hidden
+        updateScoreboard({
+            values: {
+                ...base,
+                t1Code: 'NZ',
+                t1Wickets: '0',
+                t2Code: 'IND',
+                t2Name: 'India',
+                lastOutName: '',
+            },
+            balls: ['.'],
+        } as any);
+
+        expect(DOM.bowlingTeamName.textContent).toBe('IND');
+        expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(false);
+        expect(DOM.intlWicketIsland.parentElement?.classList.contains('has-wicket-island')).toBe(false);
+
+        // Wicket falls -> island appears with single-line wicket card details and hides bowling nibble
+        updateScoreboard({
+            values: {
+                ...base,
+                t1Code: 'NZ',
+                t1Wickets: '1',
+                t2Code: 'IND',
+                lastOutName: 'Manideep M',
+                lastOutRuns: '44',
+                lastOutBalls: '18',
+                lastOutString: "<span>b </span><span class='outname'>Abhinandan reddy K</span>",
+            },
+            balls: ['W'],
+        } as any);
+
+        expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(true);
+        expect(DOM.intlWicketIsland.parentElement?.classList.contains('has-wicket-island')).toBe(true);
+        expect(DOM.intlWicketIsland.textContent).toContain('LAST WICKET');
+        expect(DOM.intlWicketIsland.textContent).toContain('Manideep M');
+        expect(DOM.intlWicketIsland.textContent).toContain('b Abhinandan reddy K · 44 (18)');
+
+        // Still visible at 119.9s
+        vi.advanceTimersByTime(119_900);
+        expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(true);
+
+        // Auto-hides at 120s and restores the bowling team nibble
+        vi.advanceTimersByTime(200);
+        expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(false);
+        expect(DOM.intlWicketIsland.parentElement?.classList.contains('has-wicket-island')).toBe(false);
+
+        // Subsequent polls with the same wicket don't re-pop the island after the 120s expired
+        updateScoreboard({
+            values: {
+                ...base,
+                t1Code: 'NZ',
+                t1Wickets: '1',
+                t2Code: 'IND',
+                lastOutName: 'Manideep M',
+                lastOutRuns: '44',
+                lastOutBalls: '18',
+                lastOutString: "<span>b </span><span class='outname'>Abhinandan reddy K</span>",
+            },
+            balls: ['W', '1'],
+        } as any);
+        expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(false);
+
+        document.body.className = '';
+        vi.useRealTimers();
     });
 });
 

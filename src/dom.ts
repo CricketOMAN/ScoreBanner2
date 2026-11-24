@@ -26,4 +26,6 @@ export const DOM = {
     intlChaseLabel: document.getElementById('intl-chase-label') as HTMLDivElement,
     intlChaseValue: document.getElementById('intl-chase-value') as HTMLDivElement,
     last12BallsContainer: document.getElementById('last-12-balls') as HTMLDivElement,
+    bowlingTeamName: document.getElementById('bowling-team-name') as HTMLDivElement,
+    intlWicketIsland: document.getElementById('intl-wicket-island') as HTMLDivElement,
 };

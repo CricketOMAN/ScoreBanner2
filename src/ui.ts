@@ -1,6 +1,9 @@
 import { DOM } from './dom';
 import { loadImage, getBallStyleClass } from './utils';
 import { CricketAPIData } from './types';
+import { parseDismissal } from './events';
+
+const WICKET_ISLAND_HOLD_MS = 120_000;
 
 interface LogoSlot {
     /** Last URL we attempted (successfully or not), so a bad URL is only tried once. */
@@ -18,6 +21,8 @@ let trackedOverBalls: string[] = [];
 let trackedOverIndex = -1;
 let trackedInningsSecond = false;
 let lastRendered12BallsJson = '';
+let lastWicketSignature = '';
+let wicketIslandTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** Test hook: forget cached logos and the last rendered over. */
 export function resetUiStateForTests() {
@@ -29,6 +34,9 @@ export function resetUiStateForTests() {
     trackedOverIndex = -1;
     trackedInningsSecond = false;
     lastRendered12BallsJson = '';
+    lastWicketSignature = '';
+    if (wicketIslandTimer) clearTimeout(wicketIslandTimer);
+    wicketIslandTimer = undefined;
 }
 
 function getFullLogoUrl(path?: string): string {
@@ -245,11 +253,14 @@ export function updateScoreboard(data: CricketAPIData) {
     // The batting side: team 2 in a chase, team 1 otherwise
     const currentTeamName = isSecondInnings ? values.t2Name : values.t1Name;
     const currentTeamCode = isSecondInnings ? values.t2Code : values.t1Code;
+    const bowlingTeamName = isSecondInnings ? values.t1Name : values.t2Name;
+    const bowlingTeamCode = isSecondInnings ? values.t1Code : values.t2Code;
     const currentTeamScore = isSecondInnings ? values.t2Total : values.t1Total;
     const currentTeamWickets = isSecondInnings ? values.t2Wickets : values.t1Wickets;
     const currentTeamOvers = isSecondInnings ? values.t2Overs : values.t1Overs;
 
     setText(DOM.teamName, (isIntl ? (currentTeamCode || currentTeamName) : currentTeamName) || 'Team 1');
+    setText(DOM.bowlingTeamName, bowlingTeamCode || bowlingTeamName || '');
     setText(DOM.teamScore, currentTeamScore || '0');
     setText(DOM.teamWickets, `${isIntl ? '-' : '/'}${currentTeamWickets || '0'}`);
     setText(DOM.teamOvers, `${currentTeamOvers || '0.0'}`);
@@ -258,6 +269,7 @@ export function updateScoreboard(data: CricketAPIData) {
     setText(DOM.statusLine, status.line);
 
     updateIntlChaseBox(values, isSecondInnings, isMatchEnded, isIntl);
+    updateWicketIsland(values, isSecondInnings, isMatchEnded);
 
     setDisplay(DOM.result, isMatchEnded ? 'flex' : 'none');
     if (isMatchEnded) {
@@ -293,4 +305,67 @@ function updateIntlChaseBox(
     setDisplay(DOM.intlChaseBox, 'flex');
     setText(DOM.intlChaseLabel, showNeed ? 'NEED' : 'TARGET');
     setText(DOM.intlChaseValue, String(showNeed ? need : target));
+}
+
+function hideWicketIsland() {
+    if (wicketIslandTimer) {
+        clearTimeout(wicketIslandTimer);
+        wicketIslandTimer = undefined;
+    }
+    if (DOM.intlWicketIsland) {
+        DOM.intlWicketIsland.classList.remove('is-visible');
+        DOM.intlWicketIsland.parentElement?.classList.remove('has-wicket-island');
+    }
+}
+
+/**
+ * Displays a single-line "LAST WICKET" island above the right side of the International bar
+ * for 120 seconds whenever a wicket is recorded (and hides the bowling team's top nibble while active).
+ */
+function updateWicketIsland(
+    values: CricketAPIData['values'],
+    isSecondInnings: boolean,
+    isMatchEnded: boolean
+) {
+    if (!DOM.intlWicketIsland) return;
+    const wickets = parseInt((isSecondInnings ? values.t2Wickets : values.t1Wickets) || '0', 10) || 0;
+    const lastOutName = (values.lastOutName || '').trim();
+
+    if (isMatchEnded || wickets <= 0 || !lastOutName) {
+        lastWicketSignature = '';
+        hideWicketIsland();
+        return;
+    }
+
+    const runs = String(values.lastOutRuns ?? '0');
+    const balls = String(values.lastOutBalls ?? '0');
+    const dismissal = parseDismissal(values.lastOutString);
+    const signature = `${isSecondInnings ? 2 : 1}:${wickets}:${lastOutName}:${runs}:${balls}:${dismissal}`;
+
+    if (signature === lastWicketSignature) return;
+    lastWicketSignature = signature;
+
+    const detail = [dismissal, `${runs} (${balls})`].filter(Boolean).join(' · ');
+    DOM.intlWicketIsland.innerHTML = '';
+
+    const tagEl = document.createElement('span');
+    tagEl.className = 'island-tag';
+    tagEl.textContent = 'LAST WICKET';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'island-name';
+    nameEl.textContent = lastOutName;
+
+    const detailEl = document.createElement('span');
+    detailEl.className = 'island-detail';
+    detailEl.textContent = detail;
+
+    DOM.intlWicketIsland.append(tagEl, nameEl, detailEl);
+    DOM.intlWicketIsland.classList.add('is-visible');
+    DOM.intlWicketIsland.parentElement?.classList.add('has-wicket-island');
+
+    if (wicketIslandTimer) clearTimeout(wicketIslandTimer);
+    wicketIslandTimer = setTimeout(() => {
+        hideWicketIsland();
+    }, WICKET_ISLAND_HOLD_MS);
 }

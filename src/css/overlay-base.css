@@ -220,7 +220,9 @@ body {
 /* International-only elements are hidden by default on standard themes */
 .intl-chase-box,
 .intl-this-over-label,
-.intl-last12-bar {
+.intl-last12-bar,
+.intl-bowling-team-name,
+.intl-wicket-island {
     display: none;
 }
 
