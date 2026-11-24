@@ -288,20 +288,24 @@ describe('updateScoreboard edge cases', () => {
         vi.restoreAllMocks();
     });
 
-    it('shows the bowling team nibble and displays the last wicket island for 120s (hiding the nibble while visible)', () => {
+    it('shows the bowling team nibble and displays the last wicket island for 120s only after a new wicket falls (not on initial page load)', () => {
         vi.useFakeTimers();
         resetUiStateForTests();
         document.body.className = 'theme-international';
 
-        // No wickets yet -> bowling team nibble is set, wicket island is hidden
+        // Initial page load mid-match when 1 wicket has already fallen earlier ->
+        // must NOT show the island on page load; only seeds state and keeps bowling nibble visible
         updateScoreboard({
             values: {
                 ...base,
                 t1Code: 'NZ',
-                t1Wickets: '0',
+                t1Wickets: '1',
                 t2Code: 'GBR',
                 t2Name: 'Ground Breakers',
-                lastOutName: '',
+                lastOutName: 'Earlier Batter',
+                lastOutRuns: '12',
+                lastOutBalls: '9',
+                lastOutString: 'b Someone',
             },
             balls: ['.'],
         } as any);
@@ -313,13 +317,14 @@ describe('updateScoreboard edge cases', () => {
         expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(false);
         expect(DOM.intlWicketIsland.parentElement?.classList.contains('has-wicket-island')).toBe(false);
 
-        // Wicket falls -> island appears with single-line wicket card details and hides bowling nibble
+        // Next wicket falls live -> island appears for 120s and hides bowling nibble
         updateScoreboard({
             values: {
                 ...base,
                 t1Code: 'NZ',
-                t1Wickets: '1',
-                t2Code: 'IND',
+                t1Wickets: '2',
+                t2Code: 'GBR',
+                t2Name: 'Ground Breakers',
                 lastOutName: 'Manideep M',
                 lastOutRuns: '44',
                 lastOutBalls: '18',
@@ -348,8 +353,9 @@ describe('updateScoreboard edge cases', () => {
             values: {
                 ...base,
                 t1Code: 'NZ',
-                t1Wickets: '1',
-                t2Code: 'IND',
+                t1Wickets: '2',
+                t2Code: 'GBR',
+                t2Name: 'Ground Breakers',
                 lastOutName: 'Manideep M',
                 lastOutRuns: '44',
                 lastOutBalls: '18',

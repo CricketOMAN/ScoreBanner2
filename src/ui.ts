@@ -22,6 +22,7 @@ let trackedOverIndex = -1;
 let trackedInningsSecond = false;
 let lastRendered12BallsJson = '';
 let lastWicketSignature = '';
+let hasSeededWicketState = false;
 let wicketIslandTimer: ReturnType<typeof setTimeout> | undefined;
 let sampleIslandPinned = false;
 
@@ -36,6 +37,7 @@ export function resetUiStateForTests() {
     trackedInningsSecond = false;
     lastRendered12BallsJson = '';
     lastWicketSignature = '';
+    hasSeededWicketState = false;
     sampleIslandPinned = false;
     if (wicketIslandTimer) clearTimeout(wicketIslandTimer);
     wicketIslandTimer = undefined;
@@ -371,7 +373,9 @@ export function showSampleWicketIsland() {
 
 /**
  * Displays a single-line "LAST WICKET" island above the center of the International bar
- * for 120 seconds whenever a wicket is recorded (and hides the bowling team's top nibble while active).
+ * for 120 seconds after a new wicket falls (and hides the bowling team's top nibble while active).
+ * Pre-existing wickets already present when the page first loads are recorded silently so
+ * a page load or refresh mid-match does not trigger the 120-second island.
  */
 function updateWicketIsland(
     values: CricketAPIData['values'],
@@ -383,6 +387,7 @@ function updateWicketIsland(
     const lastOutName = (values.lastOutName || '').trim();
 
     if (isMatchEnded || wickets <= 0 || !lastOutName) {
+        hasSeededWicketState = true;
         lastWicketSignature = '';
         hideWicketIsland();
         return;
@@ -392,6 +397,13 @@ function updateWicketIsland(
     const balls = String(values.lastOutBalls ?? '0');
     const dismissal = parseDismissal(values.lastOutString);
     const signature = `${isSecondInnings ? 2 : 1}:${wickets}:${lastOutName}:${runs}:${balls}:${dismissal}`;
+
+    if (!hasSeededWicketState) {
+        hasSeededWicketState = true;
+        lastWicketSignature = signature;
+        hideWicketIsland();
+        return;
+    }
 
     if (signature === lastWicketSignature) return;
     lastWicketSignature = signature;
