@@ -38,6 +38,7 @@
             <div class="form-group">
                 <label>Theme</label>
                 <div class="theme-grid" id="theme-grid">
+                    <div class="theme-btn" data-theme="international">international</div>
                     <div class="theme-btn" data-theme="orange">orange</div>
                     <div class="theme-btn" data-theme="classic">classic</div>
                     <div class="theme-btn" data-theme="modern">modern</div>
@@ -181,7 +182,7 @@
             <div class="team-block">
                 <div class="team-name" id="team-name">Loading...</div>
                 <div class="score-and-overs">
-                    <span class="score" id="team-score"></span><span class="wickets" id="team-wickets"></span>
+                    <span class="score-main"><span class="score" id="team-score"></span><span class="wickets" id="team-wickets"></span></span>
                     <span class="overs" id="team-overs"></span>
                     <span class="status-inline" id="status-inline"></span>
                 </div>
@@ -199,6 +200,11 @@
                 </div>
             </div>
 
+            <div class="intl-chase-box" id="intl-chase-box" style="display: none;">
+                <div class="intl-chase-label" id="intl-chase-label"></div>
+                <div class="intl-chase-value" id="intl-chase-value"></div>
+            </div>
+
             <div class="bowler-info" id="bowler-info">
                 <div class="bowler-row">
                     <div class="bowler-name" id="bowler-name"></div>
@@ -208,12 +214,18 @@
                     </div>
                 </div>
                 <div class="bowler-row">
+                    <div class="intl-this-over-label">THIS OVER</div>
                     <div class="ball-by-ball-container" id="ball-by-ball" aria-label="This over"></div>
                 </div>
             </div>
 
             <div class="bowling-team-info">
                 <img id="bowling-team-logo" class="team-logo" alt="" width="56" height="56">
+            </div>
+
+            <div class="intl-last12-bar" id="intl-last12-bar">
+                <span class="intl-last12-label">LAST 12 BALLS</span>
+                <div class="intl-last12-balls" id="last-12-balls" aria-label="Last 12 balls"></div>
             </div>
 
             <!-- Event cards (wicket, fifty, partnership, boundary) slide in over the batter and bowler slots -->

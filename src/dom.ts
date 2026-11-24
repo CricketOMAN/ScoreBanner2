@@ -22,4 +22,8 @@ export const DOM = {
     eventHeadline: document.getElementById('event-headline') as HTMLDivElement,
     eventDetail: document.getElementById('event-detail') as HTMLDivElement,
     ballContainer: document.getElementById('ball-by-ball') as HTMLDivElement,
+    intlChaseBox: document.getElementById('intl-chase-box') as HTMLDivElement,
+    intlChaseLabel: document.getElementById('intl-chase-label') as HTMLDivElement,
+    intlChaseValue: document.getElementById('intl-chase-value') as HTMLDivElement,
+    last12BallsContainer: document.getElementById('last-12-balls') as HTMLDivElement,
 };

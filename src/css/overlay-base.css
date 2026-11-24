@@ -212,6 +212,18 @@ body {
     align-items: baseline;
 }
 
+.score-main {
+    display: inline-flex;
+    align-items: baseline;
+}
+
+/* International-only elements are hidden by default on standard themes */
+.intl-chase-box,
+.intl-this-over-label,
+.intl-last12-bar {
+    display: none;
+}
+
 .score {
     font-size: 30px;
     font-weight: 800;

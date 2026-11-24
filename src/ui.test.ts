@@ -37,6 +37,11 @@ beforeEach(() => {
     createMockElement('overlay-image');
     createMockElement('batting-team-logo');
     createMockElement('bowling-team-logo');
+    const intlChaseBox = createMockElement('intl-chase-box');
+    intlChaseBox.style.display = 'none';
+    createMockElement('intl-chase-label');
+    createMockElement('intl-chase-value');
+    createMockElement('last-12-balls');
 });
 
 // Stub image loading: jsdom never fires onload, so control success/failure per URL.
@@ -76,6 +81,10 @@ vi.mock('./dom', () => {
                     overlayImage: 'overlay-image',
                     battingTeamLogo: 'batting-team-logo',
                     bowlingTeamLogo: 'bowling-team-logo',
+                    intlChaseBox: 'intl-chase-box',
+                    intlChaseLabel: 'intl-chase-label',
+                    intlChaseValue: 'intl-chase-value',
+                    last12BallsContainer: 'last-12-balls',
                 };
 
                 return document.getElementById(idMap[prop] || prop);
@@ -192,6 +201,86 @@ describe('updateScoreboard edge cases', () => {
         updateScoreboard({ values: base, balls: [] } as any);
         expect(spy).not.toHaveBeenCalled();
         spy.mockRestore();
+    });
+
+    it('formats score, batters, 30s alternating target/need box, and running last-12-balls for theme-international', () => {
+        resetUiStateForTests();
+        document.body.className = 'theme-international';
+        vi.spyOn(Date, 'now').mockReturnValue(0); // first 30s window -> TARGET
+
+        updateScoreboard({
+            values: {
+                ...base,
+                t1Code: 'NZ',
+                t1Total: '142',
+                batsman1Name: 'Ravindra',
+                batsman1Runs: '34',
+                batsman1Balls: '109',
+                batsman2Name: 'Conway',
+                batsman2Runs: '65',
+                batsman2Balls: '164',
+            },
+            balls: ['.', '1', '4', '.', '2', '.'],
+        } as any);
+
+        expect(DOM.teamName.textContent).toBe('NZ');
+        expect(DOM.teamWickets.textContent).toBe('-2');
+        expect(DOM.batsman1RunsBalls.innerHTML).toBe('<span class="intl-runs">34</span><span class="intl-balls">109</span>');
+        expect(DOM.intlChaseBox.style.display).toBe('none');
+        expect(DOM.last12BallsContainer.children).toHaveLength(6);
+
+        // Next over appends to the running Last 12 Balls counter (up to 12)
+        updateScoreboard({
+            values: {
+                ...base,
+                t1Code: 'NZ',
+                t1Overs: '11.2',
+            },
+            balls: ['6', 'W'],
+        } as any);
+        expect(DOM.last12BallsContainer.children).toHaveLength(8);
+
+        // Second innings chase: 0s window shows TARGET, 30s window shows NEED
+        updateScoreboard({
+            values: {
+                ...base,
+                isSecondInningsStarted: 'true',
+                t1Total: '142',
+                t2Name: 'India',
+                t2Code: 'IND',
+                t2Total: '23',
+                t2Wickets: '1',
+                t2Overs: '3.1',
+                isMatchEnded: '0',
+            },
+            balls: ['1'],
+        } as any);
+        expect(DOM.intlChaseBox.style.display).toBe('flex');
+        expect(DOM.intlChaseLabel.textContent).toBe('TARGET');
+        expect(DOM.intlChaseValue.textContent).toBe('143');
+        // Innings change resets the Last 12 Balls counter
+        expect(DOM.last12BallsContainer.children).toHaveLength(1);
+
+        vi.spyOn(Date, 'now').mockReturnValue(30000); // second 30s window -> NEED
+        updateScoreboard({
+            values: {
+                ...base,
+                isSecondInningsStarted: 'true',
+                t1Total: '142',
+                t2Name: 'India',
+                t2Code: 'IND',
+                t2Total: '23',
+                t2Wickets: '1',
+                t2Overs: '3.1',
+                isMatchEnded: '0',
+            },
+            balls: ['1'],
+        } as any);
+        expect(DOM.intlChaseLabel.textContent).toBe('NEED');
+        expect(DOM.intlChaseValue.textContent).toBe('120');
+
+        document.body.className = '';
+        vi.restoreAllMocks();
     });
 });
 

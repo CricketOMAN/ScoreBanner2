@@ -1,0 +1,475 @@
+/*
+ * "International" broadcast theme & layout (Willow / Cricbuzz international broadcast bar).
+ *
+ * Unlike standard themes which only override colour tokens on the 2-row slab, `.theme-international`
+ * transforms the scoreboard into a full-width lower-third broadcast bar with:
+ *   1. Left dark charcoal score pod with oversized score ("132-2") protruding slightly above the bar,
+ *      team code badge, and "OVERS 55.5" below.
+ *   2. Angled batting team logo badge (slanted right edge).
+ *   3. Center metallic silver/white ribbon with side-by-side batters (name on top, big runs + small balls below,
+ *      blue striker chevron `›`).
+ *   4. Gold 2nd-innings chase block (slanted edges) alternating every 30s between TARGET and NEED.
+ *   5. Angled bowling team logo badge (blue/cyan gradient trapezoid).
+ *   6. Right metallic silver/white ribbon with bowler (name on top, "W-R overs" below) and "THIS OVER" balls slot
+ *      (replacing the speed slot).
+ *   7. Full-width deep royal blue bottom ticker bar showing "LAST 12 BALLS" as a running counter.
+ */
+
+.theme-international {
+    --brand-accent: #1d4ed8;
+    --surface-frame: #181a1f;
+    --surface-panel: #101216;
+    --surface-row: #eef1f6;
+    --surface-pill: #181a1f;
+    --border-frame: rgba(255, 255, 255, 0.18);
+    --divider: rgba(15, 23, 42, 0.14);
+    --divider-row: rgba(15, 23, 42, 0.1);
+    --fg: #0f172a;
+    --fg-muted: #475569;
+    --fg-accent: #0b0f19;
+    --fg-title: #f8fafc;
+    --fg-pill: #ffffff;
+    --ball-idle: rgba(15, 23, 42, 0.12);
+    --ball-neutral: #1e293b;
+    --ball-neutral-fg: #ffffff;
+    --card-bg: #111827;
+    --card-fg: #f8fafc;
+}
+
+/* Full-width bottom-docked broadcast bar */
+.theme-international .overlay {
+    padding-block-end: 0;
+    gap: 10px;
+}
+
+.theme-international #firstInnings {
+    inline-size: 100%;
+    max-inline-size: 1920px;
+    display: grid;
+    grid-template-columns: auto 86px minmax(360px, 1.25fr) auto 86px minmax(420px, 1.45fr);
+    grid-template-rows: 62px 26px;
+    border-radius: 0;
+    border: none;
+    border-block-start: 1px solid rgba(255, 255, 255, 0.35);
+    overflow: visible;
+    background: linear-gradient(180deg, #ffffff 0%, #e4e8f0 52%, #cfd6e3 100%);
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Column 1: Score Block (Dark charcoal, score sticking up slightly above the bar) ---- */
+
+.theme-international .team-block {
+    grid-column: 1;
+    grid-row: 1;
+    position: relative;
+    z-index: 3;
+    min-inline-size: 215px;
+    padding-inline: 26px 22px;
+    background: linear-gradient(180deg, #272a30 0%, #141619 65%, #0c0d10 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-block-end: 6px;
+    gap: 1px;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Team code / short name pill tucked at top-left or hidden when clean */
+.theme-international .team-name {
+    position: absolute;
+    inset-block-start: -18px;
+    inset-inline-start: 24px;
+    background: #0f172a;
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    padding: 2px 8px 1px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+}
+
+.theme-international .score-and-overs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+
+/* Score + Wickets row sticking slightly above the top edge of the bar */
+.theme-international .score-main {
+    display: inline-flex;
+    align-items: baseline;
+    margin-block-start: -22px;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.65));
+}
+
+.theme-international .score,
+.theme-international .wickets {
+    font-size: 46px;
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    opacity: 1;
+    margin: 0;
+}
+
+.theme-international .overs {
+    margin: 3px 0 0;
+    padding: 0;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #e2e8f0;
+    opacity: 0.95;
+    text-transform: uppercase;
+}
+
+.theme-international .overs::before {
+    content: 'OVERS ';
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.theme-international .overs::after {
+    content: '';
+}
+
+.theme-international .status-inline,
+.theme-international .status-line {
+    display: none !important;
+}
+
+/* ---- Column 2: Batting Team Logo (Dark angled trapezoid next to score) ---- */
+
+.theme-international .batting-team-info {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    z-index: 2;
+    margin-inline-start: -10px;
+    padding-inline-start: 6px;
+    padding-inline-end: 14px;
+    background: linear-gradient(180deg, #1f2229 0%, #0d0f12 100%);
+    clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
+    border-inline-start: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Column 3: Batters (Side-by-side on metallic white/silver surface) ---- */
+
+.theme-international .batsman-info {
+    grid-column: 3;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    align-items: center;
+    background: transparent;
+    padding-inline: 14px 18px;
+    gap: 18px;
+}
+
+.theme-international .batsman-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    padding-inline: 14px;
+    border: none !important;
+    position: relative;
+}
+
+.theme-international .batsman-row + .batsman-row {
+    border-inline-start: 1px solid rgba(15, 23, 42, 0.12) !important;
+}
+
+.theme-international .batsman-name {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #1e293b;
+}
+
+/* Replace bat icon after name with a blue chevron before name, matching reference */
+.theme-international .batsman-row.on-strike .batsman-name::after {
+    display: none;
+}
+
+.theme-international .batsman-row.on-strike .batsman-name::before {
+    content: '›';
+    display: inline-block;
+    margin-inline-end: 6px;
+    color: #1d4ed8;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 0.8;
+}
+
+.theme-international .batsman-runs-balls {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    color: #0b0f19;
+}
+
+.theme-international .batsman-runs-balls .intl-runs {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: #0b0f19;
+}
+
+.theme-international .batsman-runs-balls .intl-balls {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    color: #334155;
+}
+
+/* ---- Column 4: 2nd-Innings Gold Target / Runs Needed Block (Circled in purple/pink) ---- */
+
+.theme-international .intl-chase-box {
+    grid-column: 4;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 118px;
+    padding-inline: 22px;
+    margin-inline: -10px;
+    background: linear-gradient(180deg, #f3dc7a 0%, #d4af37 55%, #b58e1e 100%);
+    clip-path: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
+    color: #0b0f19;
+    z-index: 2;
+}
+
+.theme-international .intl-chase-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    line-height: 1.05;
+    text-transform: uppercase;
+    color: #1e1604;
+    white-space: nowrap;
+}
+
+.theme-international .intl-chase-value {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    color: #0b0f19;
+    white-space: nowrap;
+}
+
+/* ---- Column 5: Bowling Team Logo (Blue/cyan angled trapezoid) ---- */
+
+.theme-international .bowling-team-info {
+    grid-column: 5;
+    grid-row: 1;
+    position: relative;
+    z-index: 2;
+    margin-inline: -8px;
+    padding-inline: 14px;
+    border: none;
+    background: linear-gradient(180deg, #38bdf8 0%, #2563eb 55%, #1d4ed8 100%);
+    clip-path: polygon(18% 0, 100% 0, 82% 100%, 0 100%);
+}
+
+.theme-international .team-logo {
+    inline-size: 48px;
+    block-size: 48px;
+}
+
+/* ---- Column 6: Bowler + Bowler's Balls ("THIS OVER" where SPEED was) ---- */
+
+.theme-international .bowler-info {
+    grid-column: 6;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: minmax(170px, auto) 1fr;
+    grid-template-rows: 1fr;
+    align-items: center;
+    background: transparent;
+    border: none;
+    padding-inline: 18px 24px;
+    gap: 20px;
+}
+
+.theme-international .bowler-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    padding-inline: 8px;
+    border: none !important;
+}
+
+.theme-international .bowler-row + .bowler-row {
+    border-inline-start: 1px solid rgba(15, 23, 42, 0.12) !important;
+    padding-inline-start: 18px;
+}
+
+.theme-international .bowler-name {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #1e293b;
+}
+
+.theme-international .bowler-figures {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    color: #0b0f19;
+}
+
+.theme-international #bowler-wickets-runs {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: #0b0f19;
+}
+
+.theme-international .bowler-overs-data {
+    padding: 0;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.theme-international .bowler-overs-data::after {
+    content: '';
+}
+
+/* Label above the bowler's current-over balls (in the SPEED slot) */
+.theme-international .intl-this-over-label {
+    display: block !important;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #334155;
+    line-height: 1;
+    margin-block-end: 3px;
+}
+
+.theme-international .ball-by-ball-container {
+    gap: 5px;
+    min-block-size: 24px;
+}
+
+/* ---- Row 2: Deep Royal Blue "LAST 12 BALLS" Running Ticker Bar ---- */
+
+.theme-international .intl-last12-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: linear-gradient(90deg, #0c164f 0%, #172774 50%, #0c164f 100%);
+    border-block-start: 1px solid rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    padding-inline: 24px;
+}
+
+.theme-international .intl-last12-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.theme-international .intl-last12-balls {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-block-size: 20px;
+}
+
+/* Compact circular indicators inside the blue LAST 12 BALLS ticker */
+.theme-international .intl-last12-balls .ball-indicator {
+    inline-size: 19px;
+    block-size: 19px;
+    font-size: 10px;
+    font-weight: 800;
+    border: 1.5px solid rgba(255, 255, 255, 0.72);
+    background: rgba(15, 23, 42, 0.45);
+    color: #ffffff;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.dot {
+    color: transparent;
+    font-size: 0;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.dot::after {
+    inline-size: 5px;
+    block-size: 5px;
+    background: #ffffff;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.run-1,
+.theme-international .intl-last12-balls .ball-indicator.run-2,
+.theme-international .intl-last12-balls .ball-indicator.run-3,
+.theme-international .intl-last12-balls .ball-indicator.run-5 {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.run-4 {
+    background: var(--ob-four);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.run-6 {
+    background: var(--ob-six);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.wicket {
+    background: var(--ob-wicket);
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.wide,
+.theme-international .intl-last12-balls .ball-indicator.no-ball {
+    background: var(--ob-extra);
+    border-color: #ffffff;
+    color: #1a1400;
+    font-size: 8px;
+}
+
+.theme-international .intl-last12-balls .ball-indicator.leg-bye,
+.theme-international .intl-last12-balls .ball-indicator.bye {
+    background: var(--ob-bye);
+    border-color: #ffffff;
+    color: #ffffff;
+    font-size: 8px;
+}
+
+/* Event card spans across the middle/right sections while keeping the score pod visible */
+.theme-international .event-card {
+    grid-column: 3 / 7;
+    grid-row: 1;
+}

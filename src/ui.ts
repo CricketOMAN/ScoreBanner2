@@ -12,13 +12,23 @@ const logoSlots = {
     team2: { attemptedUrl: null } as LogoSlot,
 };
 
-let lastBallState = { balls: '', overs: '' };
+let lastBallState = { balls: '', overs: '', isIntl: false };
+let completedOversBalls: string[] = [];
+let trackedOverBalls: string[] = [];
+let trackedOverIndex = -1;
+let trackedInningsSecond = false;
+let lastRendered12BallsJson = '';
 
 /** Test hook: forget cached logos and the last rendered over. */
 export function resetUiStateForTests() {
     logoSlots.team1.attemptedUrl = null;
     logoSlots.team2.attemptedUrl = null;
-    lastBallState = { balls: '', overs: '' };
+    lastBallState = { balls: '', overs: '', isIntl: false };
+    completedOversBalls = [];
+    trackedOverBalls = [];
+    trackedOverIndex = -1;
+    trackedInningsSecond = false;
+    lastRendered12BallsJson = '';
 }
 
 function getFullLogoUrl(path?: string): string {
@@ -67,12 +77,17 @@ export async function updateTeamLogos(data: CricketAPIData) {
  * @param ballsArray - Array of strings representing recent ball outcomes.
  * @param teamOvers - Current overs string (e.g. "10.2") to determine balls remaining.
  */
-export function updateBallByBall(ballsArray: string[], teamOvers: string) {
+export function updateBallByBall(ballsArray: string[], teamOvers: string, isSecondInnings = false) {
+    const isIntl = document.body.classList.contains('theme-international');
     const currentBallsJson = JSON.stringify(ballsArray);
-    if (currentBallsJson === lastBallState.balls && teamOvers === lastBallState.overs) {
+    if (
+        currentBallsJson === lastBallState.balls &&
+        teamOvers === lastBallState.overs &&
+        isIntl === lastBallState.isIntl
+    ) {
         return;
     }
-    lastBallState = { balls: currentBallsJson, overs: teamOvers };
+    lastBallState = { balls: currentBallsJson, overs: teamOvers, isIntl };
 
     DOM.ballContainer.innerHTML = '';
 
@@ -91,6 +106,53 @@ export function updateBallByBall(ballsArray: string[], teamOvers: string) {
             DOM.ballContainer.appendChild(ballIndicator);
         }
     }
+
+    updateLast12Balls(ballsArray, teamOvers, isSecondInnings);
+}
+
+/**
+ * Maintains a running window of the last 12 deliveries across overs for the International ticker.
+ */
+function updateLast12Balls(ballsArray: string[], teamOvers: string, isSecondInnings: boolean) {
+    if (isSecondInnings !== trackedInningsSecond) {
+        completedOversBalls = [];
+        trackedOverBalls = [];
+        trackedOverIndex = -1;
+        trackedInningsSecond = isSecondInnings;
+    }
+
+    const [wholeStr, partStr] = (teamOvers || '0.0').split('.');
+    const whole = parseInt(wholeStr, 10) || 0;
+    const part = parseInt(partStr || '0', 10) || 0;
+    // Note: when an over just completed (e.g. "11.0" with 6 balls still in `ballsArray`),
+    // it belongs to the over that just finished (whole - 1); once the first ball of the new over
+    // arrives ("11.1" or 1 ball at "11.0"), it belongs to `whole`.
+    const effectiveOverIndex = part === 0 && ballsArray.length >= 6 && whole > 0 ? whole - 1 : whole;
+
+    if (trackedOverIndex !== -1 && effectiveOverIndex !== trackedOverIndex) {
+        if (effectiveOverIndex > trackedOverIndex && trackedOverBalls.length > 0) {
+            completedOversBalls = [...completedOversBalls, ...trackedOverBalls].slice(-12);
+        } else if (effectiveOverIndex < trackedOverIndex) {
+            completedOversBalls = [];
+        }
+    }
+    trackedOverIndex = effectiveOverIndex;
+    trackedOverBalls = ballsArray.slice();
+
+    const running12 = [...completedOversBalls, ...trackedOverBalls].slice(-12);
+    const running12Json = JSON.stringify(running12);
+    if (!DOM.last12BallsContainer || running12Json === lastRendered12BallsJson) {
+        return;
+    }
+    lastRendered12BallsJson = running12Json;
+    DOM.last12BallsContainer.innerHTML = '';
+
+    running12.forEach(ballOutcome => {
+        const el = document.createElement('div');
+        el.className = `ball-indicator ${getBallStyleClass(ballOutcome)}`;
+        el.textContent = ballOutcome;
+        DOM.last12BallsContainer.appendChild(el);
+    });
 }
 
 /**
@@ -159,12 +221,18 @@ function oversRemaining(totalOvers: number | undefined, oversBowled: string | un
  */
 export function updateScoreboard(data: CricketAPIData) {
     const { values } = data;
+    const isIntl = document.body.classList.contains('theme-international');
 
     // Batsman Info
     setText(DOM.batsman1Name, values.batsman1Name || 'Batsman 1');
-    setText(DOM.batsman1RunsBalls, `${values.batsman1Runs || '0'} (${values.batsman1Balls || '0'})`);
     setText(DOM.batsman2Name, values.batsman2Name || 'Batsman 2');
-    setText(DOM.batsman2RunsBalls, `${values.batsman2Runs || '0'} (${values.batsman2Balls || '0'})`);
+    if (isIntl) {
+        setBatterRunsBallsIntl(DOM.batsman1RunsBalls, values.batsman1Runs || '0', values.batsman1Balls || '0');
+        setBatterRunsBallsIntl(DOM.batsman2RunsBalls, values.batsman2Runs || '0', values.batsman2Balls || '0');
+    } else {
+        setText(DOM.batsman1RunsBalls, `${values.batsman1Runs || '0'} (${values.batsman1Balls || '0'})`);
+        setText(DOM.batsman2RunsBalls, `${values.batsman2Runs || '0'} (${values.batsman2Balls || '0'})`);
+    }
 
     // Bowler Info
     setText(DOM.bowlerName, values.bowlerName || 'Bowler Name');
@@ -176,22 +244,53 @@ export function updateScoreboard(data: CricketAPIData) {
 
     // The batting side: team 2 in a chase, team 1 otherwise
     const currentTeamName = isSecondInnings ? values.t2Name : values.t1Name;
+    const currentTeamCode = isSecondInnings ? values.t2Code : values.t1Code;
     const currentTeamScore = isSecondInnings ? values.t2Total : values.t1Total;
     const currentTeamWickets = isSecondInnings ? values.t2Wickets : values.t1Wickets;
     const currentTeamOvers = isSecondInnings ? values.t2Overs : values.t1Overs;
 
-    setText(DOM.teamName, currentTeamName || 'Team 1');
+    setText(DOM.teamName, (isIntl ? (currentTeamCode || currentTeamName) : currentTeamName) || 'Team 1');
     setText(DOM.teamScore, currentTeamScore || '0');
-    setText(DOM.teamWickets, `/${currentTeamWickets || '0'}`);
+    setText(DOM.teamWickets, `${isIntl ? '-' : '/'}${currentTeamWickets || '0'}`);
     setText(DOM.teamOvers, `${currentTeamOvers || '0.0'}`);
     const status = isMatchEnded ? { inline: '', line: '' } : statusText(values, isSecondInnings);
     setText(DOM.statusInline, status.inline);
     setText(DOM.statusLine, status.line);
+
+    updateIntlChaseBox(values, isSecondInnings, isMatchEnded, isIntl);
 
     setDisplay(DOM.result, isMatchEnded ? 'flex' : 'none');
     if (isMatchEnded) {
         setText(DOM.matchResult, values.result || 'Match Result');
     }
 
-    updateBallByBall(data.balls || [], currentTeamOvers || '0.0');
+    updateBallByBall(data.balls || [], currentTeamOvers || '0.0', isSecondInnings);
+}
+
+function setBatterRunsBallsIntl(element: HTMLElement | null, runs: string, balls: string) {
+    if (!element) return;
+    const html = `<span class="intl-runs">${runs}</span><span class="intl-balls">${balls}</span>`;
+    if (element.innerHTML !== html) {
+        element.innerHTML = html;
+    }
+}
+
+function updateIntlChaseBox(
+    values: CricketAPIData['values'],
+    isSecondInnings: boolean,
+    isMatchEnded: boolean,
+    isIntl: boolean
+) {
+    if (!DOM.intlChaseBox) return;
+    if (!isIntl || !isSecondInnings || isMatchEnded) {
+        setDisplay(DOM.intlChaseBox, 'none');
+        return;
+    }
+    const target = (parseInt(values.t1Total || '0', 10) || 0) + 1;
+    const need = Math.max(0, target - (parseInt(values.t2Total || '0', 10) || 0));
+    // Alternate every 30 seconds between TARGET and NEED (when runs are still required)
+    const showNeed = need > 0 && Math.floor(Date.now() / 30000) % 2 === 1;
+    setDisplay(DOM.intlChaseBox, 'flex');
+    setText(DOM.intlChaseLabel, showNeed ? 'NEED' : 'TARGET');
+    setText(DOM.intlChaseValue, String(showNeed ? need : target));
 }
