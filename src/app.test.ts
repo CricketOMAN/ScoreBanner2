@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('./dom', () => ({ DOM: { teamName: document.createElement('div') } }));
 vi.mock('./api', () => ({ fetchScoreData: vi.fn() }));
-vi.mock('./ui', () => ({ updateScoreboard: vi.fn(), updateTeamLogos: vi.fn(async () => {}) }));
+vi.mock('./ui', () => ({ updateScoreboard: vi.fn(), updateTeamLogos: vi.fn(async () => {}), showSampleWicketIsland: vi.fn() }));
 vi.mock('./theme', () => ({ applyTheme: vi.fn(), updateLogo: vi.fn() }));
 vi.mock('./events', () => ({ detectEvents: vi.fn(() => []) }));
 vi.mock('./cards', () => ({ enqueueCards: vi.fn(), showSampleCard: vi.fn() }));
@@ -10,7 +10,7 @@ vi.mock('./cards', () => ({ enqueueCards: vi.fn(), showSampleCard: vi.fn() }));
 import { updateScore, pollLoop, resetAppStateForTests } from './app';
 import { DOM } from './dom';
 import { fetchScoreData } from './api';
-import { updateScoreboard, updateTeamLogos } from './ui';
+import { updateScoreboard, updateTeamLogos, showSampleWicketIsland } from './ui';
 import { applyTheme, updateLogo } from './theme';
 import { detectEvents } from './events';
 import { enqueueCards, showSampleCard } from './cards';
@@ -144,6 +144,14 @@ describe('event cards', () => {
         await updateScore();
         expect(showSampleCard).toHaveBeenCalledTimes(1);
         expect(showSampleCard).toHaveBeenCalledWith('wicket');
+    });
+
+    it('holds a sample last-wicket island on demand in debug mode when card=island', async () => {
+        setSearch('?debug=4&card=island');
+        await updateScore();
+        await updateScore();
+        expect(showSampleWicketIsland).toHaveBeenCalledTimes(1);
+        expect(showSampleCard).not.toHaveBeenCalled();
     });
 });
 

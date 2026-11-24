@@ -23,6 +23,7 @@ let trackedInningsSecond = false;
 let lastRendered12BallsJson = '';
 let lastWicketSignature = '';
 let wicketIslandTimer: ReturnType<typeof setTimeout> | undefined;
+let sampleIslandPinned = false;
 
 /** Test hook: forget cached logos and the last rendered over. */
 export function resetUiStateForTests() {
@@ -35,6 +36,7 @@ export function resetUiStateForTests() {
     trackedInningsSecond = false;
     lastRendered12BallsJson = '';
     lastWicketSignature = '';
+    sampleIslandPinned = false;
     if (wicketIslandTimer) clearTimeout(wicketIslandTimer);
     wicketIslandTimer = undefined;
 }
@@ -259,8 +261,11 @@ export function updateScoreboard(data: CricketAPIData) {
     const currentTeamWickets = isSecondInnings ? values.t2Wickets : values.t1Wickets;
     const currentTeamOvers = isSecondInnings ? values.t2Overs : values.t1Overs;
 
-    setText(DOM.teamName, (isIntl ? (currentTeamCode || currentTeamName) : currentTeamName) || 'Team 1');
-    setText(DOM.bowlingTeamName, bowlingTeamCode || bowlingTeamName || '');
+    setText(
+        DOM.teamName,
+        (isIntl ? formatIntlTeamLabel(currentTeamName, currentTeamCode) : currentTeamName) || 'Team 1'
+    );
+    setText(DOM.bowlingTeamName, formatIntlTeamLabel(bowlingTeamName, bowlingTeamCode));
     setText(DOM.teamScore, currentTeamScore || '0');
     setText(DOM.teamWickets, `${isIntl ? '-' : '/'}${currentTeamWickets || '0'}`);
     setText(DOM.teamOvers, `${currentTeamOvers || '0.0'}`);
@@ -307,6 +312,18 @@ function updateIntlChaseBox(
     setText(DOM.intlChaseValue, String(showNeed ? need : target));
 }
 
+/**
+ * Formats a readable team label for the International top nibbles (longer than a 3-letter code,
+ * without having to render an overly long multi-word team name).
+ */
+export function formatIntlTeamLabel(name?: string, code?: string): string {
+    const cleanName = (name || '').trim();
+    if (!cleanName) return (code || '').trim();
+    if (cleanName.length <= 12) return cleanName;
+    const firstWord = cleanName.split(/\s+/)[0];
+    return firstWord.length >= 4 ? firstWord.slice(0, 12) : cleanName.slice(0, 12).trim();
+}
+
 function hideWicketIsland() {
     if (wicketIslandTimer) {
         clearTimeout(wicketIslandTimer);
@@ -318,8 +335,42 @@ function hideWicketIsland() {
     }
 }
 
+function renderWicketIslandContent(name: string, dismissal: string, runs: string, balls: string) {
+    if (!DOM.intlWicketIsland) return;
+    const detail = [dismissal, `${runs} (${balls})`].filter(Boolean).join(' · ');
+    DOM.intlWicketIsland.innerHTML = '';
+
+    const tagEl = document.createElement('span');
+    tagEl.className = 'island-tag';
+    tagEl.textContent = 'LAST WICKET';
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'island-name';
+    nameEl.textContent = name;
+
+    const detailEl = document.createElement('span');
+    detailEl.className = 'island-detail';
+    detailEl.textContent = detail;
+
+    DOM.intlWicketIsland.append(tagEl, nameEl, detailEl);
+    DOM.intlWicketIsland.classList.add('is-visible');
+    DOM.intlWicketIsland.parentElement?.classList.add('has-wicket-island');
+}
+
 /**
- * Displays a single-line "LAST WICKET" island above the right side of the International bar
+ * Pins a sample Last Wicket island on screen in debug mode (`?debug=…&card=island`) for on-demand testing.
+ */
+export function showSampleWicketIsland() {
+    sampleIslandPinned = true;
+    if (wicketIslandTimer) {
+        clearTimeout(wicketIslandTimer);
+        wicketIslandTimer = undefined;
+    }
+    renderWicketIslandContent('Vikas B', 'c Ravi T b Siva Krishna V', '11', '8');
+}
+
+/**
+ * Displays a single-line "LAST WICKET" island above the center of the International bar
  * for 120 seconds whenever a wicket is recorded (and hides the bowling team's top nibble while active).
  */
 function updateWicketIsland(
@@ -327,7 +378,7 @@ function updateWicketIsland(
     isSecondInnings: boolean,
     isMatchEnded: boolean
 ) {
-    if (!DOM.intlWicketIsland) return;
+    if (!DOM.intlWicketIsland || sampleIslandPinned) return;
     const wickets = parseInt((isSecondInnings ? values.t2Wickets : values.t1Wickets) || '0', 10) || 0;
     const lastOutName = (values.lastOutName || '').trim();
 
@@ -345,24 +396,7 @@ function updateWicketIsland(
     if (signature === lastWicketSignature) return;
     lastWicketSignature = signature;
 
-    const detail = [dismissal, `${runs} (${balls})`].filter(Boolean).join(' · ');
-    DOM.intlWicketIsland.innerHTML = '';
-
-    const tagEl = document.createElement('span');
-    tagEl.className = 'island-tag';
-    tagEl.textContent = 'LAST WICKET';
-
-    const nameEl = document.createElement('span');
-    nameEl.className = 'island-name';
-    nameEl.textContent = lastOutName;
-
-    const detailEl = document.createElement('span');
-    detailEl.className = 'island-detail';
-    detailEl.textContent = detail;
-
-    DOM.intlWicketIsland.append(tagEl, nameEl, detailEl);
-    DOM.intlWicketIsland.classList.add('is-visible');
-    DOM.intlWicketIsland.parentElement?.classList.add('has-wicket-island');
+    renderWicketIslandContent(lastOutName, dismissal, runs, balls);
 
     if (wicketIslandTimer) clearTimeout(wicketIslandTimer);
     wicketIslandTimer = setTimeout(() => {

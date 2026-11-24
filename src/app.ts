@@ -9,7 +9,7 @@ import { DOM } from './dom';
 import { getQueryParams } from './utils';
 import { applyTheme, updateLogo } from './theme';
 import { fetchScoreData } from './api';
-import { updateTeamLogos, updateScoreboard } from './ui';
+import { updateTeamLogos, updateScoreboard, showSampleWicketIsland } from './ui';
 import { CricketAPIData } from './types';
 import { detectEvents } from './events';
 import { enqueueCards, showSampleCard } from './cards';
@@ -91,7 +91,11 @@ export async function updateScore() {
             console.log(`Using mock data: ${params.debug}`);
             if (params.card && !sampleCardShown) {
                 sampleCardShown = true;
-                showSampleCard(params.card);
+                if (params.card === 'island') {
+                    showSampleWicketIsland();
+                } else {
+                    showSampleCard(params.card);
+                }
             }
         } else {
             const apiUrl = `https://cricclubs.com/liveScoreOverlayData.do?clubId=${params.clubId}&matchId=${params.matchId}`;

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { updateScoreboard, updateTeamLogos, updateBallByBall, resetUiStateForTests, statusText } from './ui';
+import { updateScoreboard, updateTeamLogos, updateBallByBall, resetUiStateForTests, statusText, formatIntlTeamLabel, showSampleWicketIsland } from './ui';
 import { DOM } from './dom';
 
 // Simple mock data for elements
@@ -215,7 +215,8 @@ describe('updateScoreboard edge cases', () => {
         updateScoreboard({
             values: {
                 ...base,
-                t1Code: 'NZ',
+                t1Name: 'TOPGUNS UNITED',
+                t1Code: 'TGN',
                 t1Total: '142',
                 batsman1Name: 'Ravindra',
                 batsman1Runs: '34',
@@ -227,7 +228,7 @@ describe('updateScoreboard edge cases', () => {
             balls: ['.', '1', '4', '.', '2', '.'],
         } as any);
 
-        expect(DOM.teamName.textContent).toBe('NZ');
+        expect(DOM.teamName.textContent).toBe('TOPGUNS');
         expect(DOM.teamWickets.textContent).toBe('-2');
         expect(DOM.batsman1RunsBalls.innerHTML).toBe('<span class="intl-runs">34</span><span class="intl-balls">109</span>');
         expect(DOM.intlChaseBox.style.display).toBe('none');
@@ -298,14 +299,17 @@ describe('updateScoreboard edge cases', () => {
                 ...base,
                 t1Code: 'NZ',
                 t1Wickets: '0',
-                t2Code: 'IND',
-                t2Name: 'India',
+                t2Code: 'GBR',
+                t2Name: 'Ground Breakers',
                 lastOutName: '',
             },
             balls: ['.'],
         } as any);
 
-        expect(DOM.bowlingTeamName.textContent).toBe('IND');
+        expect(DOM.bowlingTeamName.textContent).toBe('Ground');
+        expect(formatIntlTeamLabel('Invaders', 'INV')).toBe('Invaders');
+        expect(formatIntlTeamLabel('A B C D E F G H', 'ABC')).toBe('A B C D E F');
+        expect(formatIntlTeamLabel('', 'INV')).toBe('INV');
         expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(false);
         expect(DOM.intlWicketIsland.parentElement?.classList.contains('has-wicket-island')).toBe(false);
 
@@ -354,6 +358,19 @@ describe('updateScoreboard edge cases', () => {
             balls: ['W', '1'],
         } as any);
         expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(false);
+
+        // On-demand debug mode pins the sample wicket island even when the match has 0 wickets
+        showSampleWicketIsland();
+        updateScoreboard({
+            values: {
+                ...base,
+                t1Wickets: '0',
+                lastOutName: '',
+            },
+            balls: [],
+        } as any);
+        expect(DOM.intlWicketIsland.classList.contains('is-visible')).toBe(true);
+        expect(DOM.intlWicketIsland.textContent).toContain('Vikas B');
 
         document.body.className = '';
         vi.useRealTimers();
