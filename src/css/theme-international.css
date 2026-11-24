@@ -472,4 +472,21 @@
 .theme-international .event-card {
     grid-column: 3 / 7;
     grid-row: 1;
+    position: relative;
+    margin-inline-start: -19.2px;
+    padding-inline-start: 42px;
+    border-inline-start: none;
+    background: linear-gradient(90deg, #0d1322 0%, #172038 55%, #0d1322 100%);
+    clip-path: polygon(19.2px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Inclined accent stripe matching the 19.2px over 62px slant of the logo divider */
+.theme-international .event-card::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 25px;
+    background: var(--type);
+    clip-path: polygon(19.2px 0, 25px 0, 5.8px 100%, 0 100%);
 }
